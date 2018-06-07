@@ -1,1 +1,77 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://localhost:4000/higmanschmidt/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/higmanschmidt/" rel="alternate" type="text/html" /><updated>2018-06-06T23:11:32-06:00</updated><id>http://localhost:4000/higmanschmidt/</id><title type="html">The musings and ramblings of higmanschmidt</title><subtitle>Welcome to the musings and ramblings of higmanschmidt. This is just another IT guy's blog: Articles and notes about magic pixies</subtitle></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://localhost:4000/higmanschmidt/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/higmanschmidt/" rel="alternate" type="text/html" /><updated>2018-06-06T23:33:55-06:00</updated><id>http://localhost:4000/higmanschmidt/</id><title type="html">The musings and ramblings of higmanschmidt</title><subtitle>Welcome to the musings and ramblings of higmanschmidt. This is just another IT guy's blog: Articles and notes about magic pixies</subtitle><entry><title type="html">Firefox 62 Nightlies: Improving DNS Privacy in Firefox</title><link href="http://localhost:4000/higmanschmidt/2018/06/06/Firefox-62-Nightlies-Improving-DNS-Privacy-in-Firefox.html" rel="alternate" type="text/html" title="Firefox 62 Nightlies: Improving DNS Privacy in Firefox" /><published>2018-06-06T21:56:07-06:00</published><updated>2018-06-06T21:56:07-06:00</updated><id>http://localhost:4000/higmanschmidt/2018/06/06/Firefox-62-Nightlies-Improving-DNS-Privacy-in-Firefox</id><content type="html" xml:base="http://localhost:4000/higmanschmidt/2018/06/06/Firefox-62-Nightlies-Improving-DNS-Privacy-in-Firefox.html">&lt;p&gt;Firefox recently introduced &lt;strong&gt;DNS over HTTPS (DoH)&lt;/strong&gt; and &lt;strong&gt;Trusted Recursive Resolver (TRR)&lt;/strong&gt; in nightly builds for Firefox 62.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;DoH&lt;/strong&gt; and &lt;strong&gt;TRR&lt;/strong&gt; are intended to help mitigate these potential privacy and security concerns:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Untrustworthy DNS resolvers tracking your requests, or tampering with responses from DNS servers.&lt;/li&gt;
+  &lt;li&gt;On-path routers tracking or tampering in the same way.&lt;/li&gt;
+  &lt;li&gt;DNS servers tracking your DNS requests.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;DNS over HTTPs (DoH)&lt;/strong&gt; encrypts DNS requests and responses, protecting against on-path eavesdropping, tracking, and response tampering.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Trusted Recursive Resolver (TRR)&lt;/strong&gt; allows Firefox to use a DNS resolver that’s different from your machines network settings. You can use any recursive resolver that is compatible with DoH, but it should be a trusted resolver (one that won’t sell users’ data or trick users with spoofed DNS).  Mozilla is partnering with Cloudflare (but not using the 1.1.1.1 address) as the initial default TRR, however it’s possible to use another 3rd party TRR or run your own.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Cloudflare is providing a recursive resolution service with a pro-user privacy policy. They have committed to throwing away all personally identifiable data after 24 hours, and to never pass that data along to third-parties. And there will be regular audits to ensure that data is being cleared as expected.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Additionally, Cloudflare will be doing &lt;a href=&quot;https://datatracker.ietf.org/doc/rfc7816/?include_text=1&quot;&gt;&lt;strong&gt;QNAME minimization&lt;/strong&gt;&lt;/a&gt; where the DNS resolver no longer sends the full original QNAME (foo.bar.baz.example.com) to the upstream name server. Instead it will only include the label for the zone it’s trying to resolve.&lt;/p&gt;
+
+&lt;p&gt;For example, let’s assume the DNS Resolver is trying to find foo.bar.baz.example.com, and already knows that ns1.nic.example.com is authoritative for .example.com, but does not know a more specific authoritative name server.&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;It will send the query for just baz.example.com to ns1.nic.example.com which returns the authoritative name server for baz.example.com.&lt;/li&gt;
+  &lt;li&gt;The resolver then sends a query for bar.baz.example.com to the nameserver for baz.example.com, and gets a response with the authoritative nameserver for bar.baz.example.com&lt;/li&gt;
+  &lt;li&gt;Finally the resolver sends the query for foo.bar.baz.example.com to bar.baz.example.com’s nameserver.
+In doing this the full requested name (foo.bar.baz.example.com) is not exposed to intermediate name servers (bar.baz.example.com or baz.example.com)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Collectively &lt;strong&gt;DNS over HTTPs (DoH)&lt;/strong&gt;, &lt;strong&gt;Trusted Recursive Resolver (TRR)&lt;/strong&gt;, and &lt;strong&gt;QNAME Minimization&lt;/strong&gt; are a step in the right direction, this does not fix DNS related data leaks entirely:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;After you do the DNS lookup to find the IP address, you still need to connect to the web server at that address. To do this, you send an initial request. This request includes a server name indication, which says which site on the server you want to connect to. &lt;strong&gt;And this request is unencrypted.&lt;/strong&gt;
+That means that your ISP can still figure out which sites you’re visiting, because it’s right there in the server name indication. Plus, &lt;strong&gt;the routers that pass that initial request from your browser to the web server can see that info too.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;So How do I enable it?&lt;/strong&gt;
+DoH and TRR can be enabled in Firefox 62 or newer by going to &lt;strong&gt;about:config&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Set &lt;strong&gt;network.trr.mode&lt;/strong&gt; to &lt;strong&gt;2&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Here’s the possible network.trr.mode settings:
+        &lt;ul&gt;
+          &lt;li&gt;&lt;strong&gt;0 - Off (default)&lt;/strong&gt;: Use standard native resolving only (don’t use TRR at all)&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;1 - Race&lt;/strong&gt;: Native vs. TRR. Do them both in parallel and go with the one that returns a result first.&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;2 - First&lt;/strong&gt;: Use TRR first, and only if the name resolve fails use the native resolver as a fallback.&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;3 - Only&lt;/strong&gt;: Only use TRR. Never use the native (after the initial setup).&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;4 - Shadow&lt;/strong&gt;: Runs the TRR resolves in parallel with the native for timing and measurements but uses only the native resolver results.&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;5 - Off by choice&lt;/strong&gt;: This is the same as 0 but marks it as done by choice and not done by default.&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Set &lt;strong&gt;network.trr.uri&lt;/strong&gt; to your DoH Server:
+    &lt;ul&gt;
+      &lt;li&gt;Cloudflare’s is https://mozilla.cloudflare-dns.com/dns-query
+  (but you can use any DoH compliant endpoint)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;The DNS Tab on &lt;strong&gt;about:networking&lt;/strong&gt; will show which names were resolved using TRR via DoH.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Links:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://hacks.mozilla.org/2018/05/a-cartoon-intro-to-dns-over-https/&quot;&gt;A cartoon intro to DNS over HTTPS&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.nightly.mozilla.org/2018/06/01/improving-dns-privacy-in-firefox/&quot;&gt;Improving DNS Privacy in Firefox&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://datatracker.ietf.org/doc/rfc7816/?include_text=1&quot;&gt;DNS Query Name Minimization to Improve Privacy&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://gist.github.com/bagder/5e29101079e9ac78920ba2fc718aceec&quot;&gt;TRR Preferences&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;I’m not affiliated with Mozilla or Firefox, I just thought ~ would find this interesting.&lt;/p&gt;</content><author><name></name></author><summary type="html">Firefox recently introduced DNS over HTTPS (DoH) and Trusted Recursive Resolver (TRR) in nightly builds for Firefox 62.</summary></entry><entry><title type="html">Hello World</title><link href="http://localhost:4000/higmanschmidt/2018/06/06/hello-world.html" rel="alternate" type="text/html" title="Hello World" /><published>2018-06-06T21:50:07-06:00</published><updated>2018-06-06T21:50:07-06:00</updated><id>http://localhost:4000/higmanschmidt/2018/06/06/hello-world</id><content type="html" xml:base="http://localhost:4000/higmanschmidt/2018/06/06/hello-world.html">&lt;p&gt;Ok, I’ve decided it’s time that I actually have a website with somewhere to post about the things that interest me. I’ll be using this space to post links to, or summaries of, things I find that interest me, as well as original notes and articles.&lt;/p&gt;
+
+&lt;p&gt;The content here will probably be a mix of things.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Sysadmin: Windows, Powershell, web, security, and privacy.&lt;/li&gt;
+  &lt;li&gt;Craft: Woodworking, Furniture Making&lt;/li&gt;
+  &lt;li&gt;Automotive: Car/Truck/Motorcycle projects, Builds and Parts lists, Trip Reports, even Automotive Electrical Wiring&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">Ok, I’ve decided it’s time that I actually have a website with somewhere to post about the things that interest me. I’ll be using this space to post links to, or summaries of, things I find that interest me, as well as original notes and articles.</summary></entry></feed>
