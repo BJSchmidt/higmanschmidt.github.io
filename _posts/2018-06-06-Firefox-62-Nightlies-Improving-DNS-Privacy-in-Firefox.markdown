@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Firefox 62 Nightlies: Improving DNS Privacy in Firefox"
-date:   2018-06-06 21:56:07 -0600
+date:   2018-06-06 11:56:07 -0600
 categories:
 ---
 Firefox recently introduced **DNS over HTTPS (DoH)** and **Trusted Recursive Resolver (TRR)** in nightly builds for Firefox 62.
